@@ -977,14 +977,18 @@ function buildContador(){
       <div class="cbox"><div class="cnum" id="c-min">0</div><div class="clabel">Minutos</div></div>
       <div class="cbox"><div class="cnum" id="c-seg">0</div><div class="clabel">Segundos</div></div>
     </div>
-    <p style="margin-top:22px;color:var(--ink-soft);font-size:13px;">desde ${new Date(CONFIG.inicioNamoro).toLocaleDateString('pt-PT',{day:'numeric',month:'long',year:'numeric'})} ❤️</p>
+    <p style="margin-top:22px;color:var(--ink-soft);font-size:13px;">desde ${(()=>{const [a,m,d]=CONFIG.inicioNamoro.split('-').map(Number);return new Date(a,m-1,d).toLocaleDateString('pt-PT',{day:'numeric',month:'long',year:'numeric',timeZone:'Europe/Lisbon'});})()} ❤️</p>
   </div>`;
 }
 
 function updateCounter(){
   const el = document.getElementById('c-anos');
   if(!el) return;
-  const start = new Date(CONFIG.inicioNamoro);
+  // Cria a data de início à meia-noite em horário local.
+  // Evita que "2026-04-08" seja interpretado como UTC, o que no horário
+  // de verão de Portugal fazia o contador ficar 1 hora atrasado.
+  const [anoInicio, mesInicio, diaInicio] = CONFIG.inicioNamoro.split('-').map(Number);
+  const start = new Date(anoInicio, mesInicio - 1, diaInicio, 0, 0, 0);
   const now = new Date();
   let years = now.getFullYear()-start.getFullYear();
   let months = now.getMonth()-start.getMonth();
