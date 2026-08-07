@@ -1043,7 +1043,7 @@ function buildSurpresas(){
       <div class="surprise-card">
         <b>🎟️ Vale para um encontro</b>
         <div style="text-align:center;margin-top:14px;">
-          <button class="btn" id="valeRevealBtn" onclick="revealVale()">Ver vale 🎟️</button>
+          <button class="btn" id="valeRevealBtn" onclick="revealVale()">Baixar vale 🎟️</button>
         </div>
         <div id="valeContent" style="display:none;">
           <div class="vale-img-wrap">
@@ -1061,9 +1061,40 @@ function buildSurpresas(){
   </div>`;
 }
 
-function revealVale(){
-  document.getElementById('valeContent').style.display = 'block';
-  document.getElementById('valeRevealBtn').style.display = 'none';
+async function revealVale(){
+  const pastaF = CONFIG.galeria.pasta;
+  const url = pastaF + CONFIG.surpresa.valeFoto;
+  const nome = CONFIG.surpresa.valeFoto;
+
+  try{
+    // Faz download real da imagem. Isto é mais fiável em Safari/iPhone
+    // do que depender apenas do atributo "download".
+    const resposta = await fetch(url);
+    if(!resposta.ok) throw new Error('Não foi possível carregar o vale.');
+
+    const blob = await resposta.blob();
+    const blobUrl = URL.createObjectURL(blob);
+
+    const link = document.createElement('a');
+    link.href = blobUrl;
+    link.download = nome;
+    document.body.appendChild(link);
+    link.click();
+    link.remove();
+
+    setTimeout(()=>URL.revokeObjectURL(blobUrl), 1500);
+  }catch(e){
+    // Fallback: abre a imagem diretamente caso o navegador bloqueie
+    // o download automático (pode acontecer em algumas versões do Safari).
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = nome;
+    link.target = '_blank';
+    link.rel = 'noopener';
+    document.body.appendChild(link);
+    link.click();
+    link.remove();
+  }
 }
 
 function tryUnlock(){
